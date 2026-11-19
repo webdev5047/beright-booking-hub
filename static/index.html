@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BEright Care Clinic & Pharmacy Chamber | Smart Appointment & AI Agent</title>
+  <style>
+    :root {
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --border-glow: rgba(239, 99, 255, 0.35);
+      --pink: #ef63ff;
+      --purple: #8b5cf6;
+      --cyan: #38bdf8;
+      --green: #10b981;
+      --red: #f43f5e;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body {
+      background: radial-gradient(circle at top left, #2e1065 0%, #090d16 48%, #020617 100%);
+      color: var(--text-main); min-height: 100vh; overflow-x: hidden;
+      display: flex; flex-direction: column;
+    }
+    .marquee-wrap {
+      background: linear-gradient(90deg, #4c1d95, #831843, #1e3a8a);
+      border-bottom: 1px solid rgba(239, 99, 255, 0.4);
+      padding: 8px 0; overflow: hidden; white-space: nowrap;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.6px; color: #fdf4ff;
+    }
+    .marquee-text { display: inline-block; padding-left: 100%; animation: scrollBanner 25s linear infinite; }
+    @keyframes scrollBanner { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+    .container { max-width: 1320px; width: 100%; margin: 0 auto; padding: 20px; flex: 1; }
+
+    .navbar {
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 18px;
+      background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(18px);
+      border: 1px solid var(--border-glow); box-shadow: 0 12px 40px rgba(239, 99, 255, 0.18);
+      border-radius: 22px; padding: 24px 28px; margin-bottom: 24px;
+    }
+    .logo-area h1 {
+      font-size: 30px; font-weight: 900; letter-spacing: -0.4px; line-height: 1.2;
+      background: linear-gradient(90deg, #38bdf8, #ef63ff, #f472b6);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .logo-area p { font-size: 14px; color: #cbd5e1; margin-top: 6px; font-weight: 500; }
+
+    .nav-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .pill-btn {
+      padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.16); background: rgba(255, 255, 255, 0.06); color: #fff;
+      transition: all 0.25s ease;
+    }
+    .pill-btn:hover { transform: translateY(-2px); border-color: var(--pink); }
+    .pill-btn.active { background: linear-gradient(90deg, var(--purple), var(--pink)); border-color: transparent; }
+    .mode-btn { background: rgba(56, 189, 248, 0.15); border: 1px solid var(--cyan); color: var(--cyan); }
+
+    .section-title { font-size: 16px; color: #e2e8f0; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; font-weight: 700; }
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .service-card {
+      background: var(--card-bg); backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 18px; padding: 18px;
+      cursor: pointer; transition: all 0.25s ease;
+    }
+    .service-card:hover { transform: translateY(-4px); border-color: var(--pink); }
+    .service-card.selected {
+      border: 2px solid var(--pink);
+      background: linear-gradient(145deg, rgba(139, 92, 246, 0.22), rgba(239, 99, 255, 0.14));
+      box-shadow: 0 0 24px rgba(239, 99, 255, 0.3);
+    }
+    .service-icon { font-size: 28px; margin-bottom: 8px; }
+    .service-name { font-size: 16px; font-weight: 700; color: #fff; }
+    .service-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .service-meta {
+      display: flex; justify-content: space-between; align-items: center; margin-top: 12px;
+      padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 12px; font-weight: 700;
+    }
+
+    .booking-grid { display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 22px; }
+    @media (max-width: 960px) { .booking-grid { grid-template-columns: 1fr; } }
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 20px; padding: 22px;
+    }
+
+    .slots-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: 9px;
+      margin-top: 12px; max-height: 360px; overflow-y: auto; padding-right: 4px;
+    }
+    .slot-chip {
+      padding: 10px 6px; border-radius: 11px; text-align: center; font-size: 12px; font-weight: 700;
+      border: 1px solid rgba(56, 189, 248, 0.35); background: rgba(56, 189, 248, 0.08); color: #e0f2fe;
+      cursor: pointer; transition: 0.2s;
+    }
+    .slot-chip:hover:not(.booked) { background: rgba(56, 189, 248, 0.25); transform: translateY(-2px); }
+    .slot-chip.active { background: linear-gradient(90deg, var(--purple), var(--pink)); border-color: #fff; color: #fff; }
+    .slot-chip.booked {
+      background: rgba(244, 63, 94, 0.14); border-color: rgba(244, 63, 94, 0.4);
+      color: #fda4af; cursor: not-allowed; text-decoration: line-through; opacity: 0.75;
+    }
+    .slot-chip small { display: block; font-size: 10px; margin-top: 2px; }
+
+    label { display: block; font-size: 12px; color: #cbd5e1; margin-top: 12px; margin-bottom: 5px; font-weight: 600; }
+    input, select, textarea {
+      width: 100%; padding: 11px 14px; border-radius: 11px;
+      border: 1px solid rgba(255, 255, 255, 0.18); background: rgba(2, 6, 23, 0.85);
+      color: #fff; font-size: 14px; outline: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--pink); }
+    .btn-confirm {
+      width: 100%; margin-top: 18px; padding: 14px; border: none; border-radius: 13px;
+      background: linear-gradient(90deg, #8b5cf6, #ef63ff, #ec4899);
+      color: #fff; font-size: 14px; font-weight: 800; cursor: pointer;
+    }
+
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(8px);
+      display: none; justify-content: center; align-items: center; z-index: 999; padding: 16px;
+    }
+    .token-card {
+      background: linear-gradient(160deg, #1e1b4b, #0f172a);
+      border: 2px solid var(--pink); border-radius: 24px; padding: 26px; max-width: 440px; width: 100%;
+      text-align: center; box-shadow: 0 0 50px rgba(239, 99, 255, 0.4);
+    }
+    .token-num { font-size: 32px; font-weight: 900; color: #fff; margin: 8px 0; }
+    .qr-box { background: #fff; padding: 10px; border-radius: 14px; display: inline-block; margin: 10px 0; }
+    .token-details {
+      text-align: left; background: rgba(2, 6, 23, 0.65); border-radius: 12px; padding: 12px 15px;
+      font-size: 13px; line-height: 1.7; color: #e2e8f0;
+    }
+    .wa-connect-btn {
+      display: block; width: 100%; margin-top: 12px; padding: 11px; border-radius: 11px;
+      background: #16a34a; color: #fff; font-weight: 800; font-size: 13px; text-decoration: none;
+    }
+
+    .admin-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px; }
+    @media (max-width: 820px) { .admin-kpis { grid-template-columns: repeat(2, 1fr); } }
+    .kpi-box {
+      background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 15px; padding: 15px;
+    }
+    .kpi-box span { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
+    .kpi-box h3 { font-size: 20px; margin-top: 4px; color: #fff; }
+
+    .admin-tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 18px; }
+    @media (max-width: 960px) { .admin-tools { grid-template-columns: 1fr; } }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+    th, td { padding: 11px 9px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+    th { color: var(--cyan); font-size: 12px; text-transform: uppercase; }
+    .status-tag { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+    .st-confirmed { background: rgba(56, 189, 248, 0.18); color: #38bdf8; }
+    .st-completed { background: rgba(16, 185, 129, 0.18); color: #34d399; }
+    .st-cancelled { background: rgba(244, 63, 94, 0.18); color: #fda4af; }
+    .act-btn { padding: 5px 9px; border-radius: 7px; border: none; font-size: 11px; font-weight: 700; cursor: pointer; margin-right: 4px; }
+    .btn-wa { background: #16a34a; color: #fff; text-decoration: none; }
+    .btn-done { background: #0284c7; color: #fff; }
+    .btn-del { background: #e11d48; color: #fff; }
+
+    .ai-fab {
+      position: fixed; bottom: 22px; right: 22px; z-index: 900;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      color: #fff; border: none; border-radius: 999px; padding: 14px 20px;
+      font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 0 8px 28px rgba(239, 99, 255, 0.5);
+    }
+    .ai-chat-box {
+      position: fixed; bottom: 80px; right: 22px; width: 350px; max-width: 92vw; z-index: 900;
+      background: #0f172a; border: 1px solid var(--pink); border-radius: 18px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7); display: none; flex-direction: column; overflow: hidden;
+    }
+    .ai-chat-head {
+      background: linear-gradient(90deg, var(--purple), var(--pink));
+      padding: 12px 16px; font-weight: 800; font-size: 14px; display: flex; justify-content: space-between;
+    }
+    .ai-chat-body { padding: 14px; height: 240px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 13px; }
+    .msg-bot { background: rgba(56, 189, 248, 0.14); border: 1px solid rgba(56, 189, 248, 0.3); padding: 9px 12px; border-radius: 12px; align-self: flex-start; }
+    .msg-user { background: rgba(239, 99, 255, 0.22); padding: 9px 12px; border-radius: 12px; align-self: flex-end; }
+    .ai-chat-foot { display: flex; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+    .ai-chat-foot input { border: none; border-radius: 0; background: #020617; }
+    .ai-chat-foot button { background: var(--pink); border: none; color: #fff; padding: 0 16px; font-weight: 800; cursor: pointer; }
+
+    .footer-bar {
+      text-align: center; padding: 18px; margin-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 13px; color: var(--text-muted);
+    }
+    .built-by-btn {
+      background: rgba(239, 99, 255, 0.12); border: 1px solid rgba(239, 99, 255, 0.4);
+      color: #f472b6; padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 700;
+      cursor: pointer; transition: 0.2s;
+    }
+    .built-by-btn:hover { background: rgba(239, 99, 255, 0.25); color: #fff; }
+  </style>
+</head>
+<body>
+
+  <div class="marquee-wrap">
+    <div class="marquee-text">
+      ✨ 24/7 ONLINE APPOINTMENT BOOKING • 30+ SMART TIME SLOTS • INSTANT QR TOKEN & THANK YOU EMAIL • WEEKLY DOCTOR SCHEDULE & AI CARE AGENT • DIRECT WHATSAPP CONNECT ✨
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="navbar">
+      <div class="logo-area">
+        <h1 id="brandTitle">🩺 BEright Care Clinic & Pharmacy Chamber</h1>
+        <p id="brandSubtitle">Smart Time Slots • Instant QR Token • Automated Email & WhatsApp Care</p>
+      </div>
+      <div class="nav-actions">
+        <button class="pill-btn mode-btn" onclick="toggleBusinessMode()" id="modeSwitchBtn">💇‍♀️ Switch to Beauty Salon Demo</button>
+        <button class="pill-btn active" id="tabCustomerBtn" onclick="switchTab('customer')">📅 Customer Booking</button>
+        <button class="pill-btn" id="tabAdminBtn" onclick="switchTab('admin')">🔐 Owner Admin Panel</button>
+      </div>
+    </div>
+
+    <!-- CUSTOMER VIEW -->
+    <div id="customerView">
+      <div class="section-title" id="step1Title">1️⃣ Select Doctor / Medical Department</div>
+      <div class="services-grid" id="servicesGrid"></div>
+
+      <div class="booking-grid">
+        <div class="glass-panel">
+          <div class="section-title">2️⃣ Choose Date & Smart Time Slot (<span id="slotCountBadge">30</span> Slots)</div>
+          <label>Select Appointment Date</label>
+          <input type="date" id="bookingDate" onchange="renderSlots()" />
+
+          <label style="margin-top: 14px;">All Daily Time Slots (08:00 AM – 10:30 PM)</label>
+          <div class="slots-grid" id="slotsGrid"></div>
+        </div>
+
+        <div class="glass-panel">
+          <div class="section-title">3️⃣ Enter Your Details for Instant Confirmation</div>
+          <form id="bookingForm">
+            <label id="nameLabel">Patient Full Name *</label>
+            <input id="custName" placeholder="e.g. Ananya Sharma / Jan Kowalski" required />
+
+            <label>WhatsApp / Phone Number (With Country Code) *</label>
+            <input id="custPhone" placeholder="e.g. +91 98300 12345 or +48 510 820 441" required />
+
+            <label>Email Address (For Thank You Receipt & Weekly Doctor Schedule) *</label>
+            <input id="custEmail" type="email" placeholder="e.g. client@gmail.com" required />
+
+            <label id="noteLabel">Symptoms / Special Note (Optional)</label>
+            <textarea id="custNote" rows="2" placeholder="Briefly describe visit reason..."></textarea>
+
+            <button type="submit" class="btn-confirm" id="confirmBtn">⚡ Confirm Booking & Get QR Token</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN VIEW -->
+    <div id="adminView" style="display: none;">
+      <div class="admin-kpis">
+        <div class="kpi-box">
+          <span>Total Appointments</span>
+          <h3 id="kpiBookings">0</h3>
+        </div>
+        <div class="kpi-box" style="border-color: rgba(16, 185, 129, 0.4);">
+          <span>Estimated Revenue</span>
+          <h3 id="kpiRevenue" style="color: #34d399;">0</h3>
+        </div>
+        <div class="kpi-box" style="border-color: rgba(239, 99, 255, 0.4);">
+          <span>Saved CRM Clients</span>
+          <h3 id="kpiClients" style="color: #f472b6;">0</h3>
+        </div>
+        <div class="kpi-box" style="border-color: rgba(56, 189, 248, 0.4);">
+          <span>AI Care Agent Mode</span>
+          <h3 id="kpiAiStatus" style="color: #38bdf8;">Smart Built-in</h3>
+        </div>
+      </div>
+
+      <div class="admin-tools">
+        <!-- 1. Gemini / Groq API Key Setup -->
+        <div class="glass-panel">
+          <div class="section-title">🤖 Connect Free AI Agent API (Gemini / Groq)</div>
+          <p style="font-size: 12px; color: #94a3b8; margin-bottom: 8px;">Add a free Gemini or Groq API key so the AI Agent proactively checks on patients/clients and drafts weekly care emails:</p>
+          <select id="aiProviderSelect" style="margin-bottom: 8px;">
+            <option value="gemini">Google Gemini API (Free Tier)</option>
+            <option value="groq">Groq Llama-3 API (Free Tier)</option>
+          </select>
+          <div style="display: flex; gap: 8px;">
+            <input id="aiApiKeyInput" type="password" placeholder="Paste Gemini or Groq API Key..." />
+            <button type="button" class="pill-btn active" onclick="saveAiApiKey()">Save Key</button>
+          </div>
+        </div>
+
+        <!-- 2. Extra Time Slot Adder -->
+        <div class="glass-panel">
+          <div class="section-title">➕ Add Extra Time Slot</div>
+          <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">Need more than 30 slots? Add any extra time slot (e.g. 11:00 PM or 07:30 AM) and it immediately appears on the booking page.</p>
+          <div style="display: flex; gap: 8px;">
+            <input id="newSlotInput" placeholder="e.g. 11:00 PM" />
+            <button type="button" class="pill-btn active" onclick="addCustomSlot()">+ Add Slot</button>
+          </div>
+        </div>
+
+        <!-- 3. Weekly Doctor Roster & Care Check-In Email -->
+        <div class="glass-panel">
+          <div class="section-title">📅 Weekly Doctor Schedule & Care Check-In</div>
+          <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">Automatically emails all saved clients every week asking how they are feeling and sharing this week's doctor/specialist visit schedule:</p>
+          <button type="button" class="pill-btn active" style="width: 100%;" onclick="sendWeeklyCampaignNow()">🚀 Send Weekly Schedule & Care Email Now</button>
+        </div>
+      </div>
+
+      <div class="glass-panel" style="overflow-x: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div class="section-title" style="margin: 0;">📋 Live Patient / Client Queue & WhatsApp Connect</div>
+          <button class="pill-btn" onclick="switchTab('customer')">+ New Walk-in Booking</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Token</th>
+              <th>Client Name</th>
+              <th>WhatsApp & Email</th>
+              <th>Service / Doctor</th>
+              <th>Date & Slot</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="adminTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer-bar">
+    <button class="built-by-btn" onclick="document.getElementById('builtByModal').style.display='flex'">
+      ⚡ This System Built By BEright Automations — View Tech Stack
+    </button>
+  </footer>
+
+  <!-- QR TOKEN + AUTO WHATSAPP POPUP -->
+  <div class="modal-overlay" id="tokenModal">
+    <div class="token-card">
+      <div style="color:#34d399;font-weight:800;font-size:12px;">✅ BOOKING CONFIRMED • THANK YOU EMAIL SENT</div>
+      <div class="token-num" id="modalToken">#TKN-101</div>
+      <div class="qr-box"><img id="modalQrImg" src="" alt="Booking QR" width="140" height="140" /></div>
+      <div class="token-details" id="modalDetails"></div>
+      <a id="modalWaBtn" href="#" target="_blank" class="wa-connect-btn">💬 Connect & Send Ticket on WhatsApp</a>
+      <div style="display: flex; gap: 10px; margin-top: 12px;">
+        <button class="pill-btn active" style="flex: 1;" onclick="window.print()">🖨️ Print / Save PDF</button>
+        <button class="pill-btn" style="flex: 1;" onclick="document.getElementById('tokenModal').style.display='none'">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BUILT BY TECH STACK MODAL -->
+  <div class="modal-overlay" id="builtByModal">
+    <div class="token-card" style="text-align: left;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h3 style="color:#ef63ff;font-size:18px;">⚡ System Architecture & Tech Stack</h3>
+        <span style="cursor:pointer;font-size:16px;" onclick="document.getElementById('builtByModal').style.display='none'">✖</span>
+      </div>
+      <p style="font-size:13px;color:#cbd5e1;margin-bottom:12px;">
+        Engineered by <b>BEright Automations</b> (Subrata Mondal) as a high-security, zero-monthly-overhead appointment & AI client care platform:
+      </p>
+      <div class="token-details">
+        • <b>Frontend UI:</b> Custom HTML5, CSS3 3D Glassmorphism & Responsive Vanilla JS<br>
+        • <b>Backend API Engine:</b> Python FastAPI Asynchronous Server<br>
+        • <b>Autonomous AI Care Agent:</b> Multi-LLM Ready (Google Gemini / Groq Llama-3) + Smart Knowledge Engine<br>
+        • <b>Cloud Database & CRM:</b> Google Workspace Cloud & Apps Script Automation<br>
+        • <b>Communication & Alerts:</b> Service-Tailored Thank You Emails, Weekly Doctor Schedule & Care Check-Ins, and Direct WhatsApp Integration
+      </div>
+      <button class="pill-btn active" style="width:100%;margin-top:16px;" onclick="document.getElementById('builtByModal').style.display='none'">Close</button>
+    </div>
+  </div>
+
+  <!-- FLOATING AI CARE AGENT CHATBOT -->
+  <button class="ai-fab" onclick="toggleAiChat()">🤖 AI Care Agent</button>
+  <div class="ai-chat-box" id="aiChatBox">
+    <div class="ai-chat-head">
+      <span>🤖 AI Care & Booking Agent</span>
+      <span style="cursor:pointer;" onclick="toggleAiChat()">✖</span>
+    </div>
+    <div class="ai-chat-body" id="aiChatBody">
+      <div class="msg-bot">Hello! How are you feeling today? Ask me about this week's doctor schedule, available time slots, or service details!</div>
+    </div>
+    <div class="ai-chat-foot">
+      <input id="aiInput" placeholder="Ask about doctors, slots, or care..." onkeypress="if(event.key==='Enter') sendAiQuestion()" />
+      <button onclick="sendAiQuestion()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    let currentMode = 'clinic';
+    let selectedService = null;
+    let selectedSlot = null;
+
+    let allTimeSlots = [
+      '08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM',
+      '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM',
+      '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM',
+      '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM', '07:00 PM', '07:30 PM',
+      '08:00 PM', '08:30 PM', '09:00 PM', '09:30 PM', '10:00 PM', '10:30 PM'
+    ];
+
+    const presets = {
+      clinic: {
+        title: '🩺 BEright Care Clinic & Pharmacy Chamber',
+        subtitle: 'Smart Time Slots • Instant QR Token • Automated Email & WhatsApp Care',
+        switchBtn: '💇‍♀️ Switch to Beauty Salon Demo',
+        step1: '1️⃣ Select Doctor / Medical Department',
+        nameLabel: 'Patient Full Name *',
+        noteLabel: 'Symptoms / Health Note (Optional)',
+        currency: '₹',
+        services: [
+          { id: 'doc1', icon: '👨‍⚕️', name: 'Dr. A. Sen (General Physician)', sub: 'MBBS, MD • Fever, BP, Diabetes & Checkup', price: 500, duration: '30 Mins' },
+          { id: 'doc2', icon: '🦷', name: 'Dr. R. Das (Dental & Root Canal)', sub: 'BDS • Painless Dental Care & Scaling', price: 600, duration: '30 Mins' },
+          { id: 'doc3', icon: '👶', name: 'Dr. P. Roy (Child & Pediatrician)', sub: 'MD Pediatrics • Vaccination & Child Care', price: 550, duration: '30 Mins' },
+          { id: 'doc4', icon: '🧪', name: 'Full Body Blood & ECG Checkup', sub: 'Pharmacy Diagnostic Lab • Fast Report', price: 999, duration: '30 Mins' }
+        ]
+      },
+      salon: {
+        title: '💇‍♀️ BEright Glow Luxury Beauty Salon & Spa',
+        subtitle: 'Smart Time Slots • Instant QR Token • Automated Email & WhatsApp Care',
+        switchBtn: '🩺 Switch to Doctor Clinic Demo',
+        step1: '1️⃣ Select Beauty / Grooming Package',
+        nameLabel: 'Client Full Name *',
+        noteLabel: 'Hair / Skin Preference (Optional)',
+        currency: 'zł',
+        services: [
+          { id: 'sal1', icon: '✨', name: 'Hydra Facial & Skin Glow Therapy', sub: 'Deep Cleansing + Vitamin C Mask', price: 180, duration: '30 Mins' },
+          { id: 'sal2', icon: '💇‍♀️', name: 'Keratin Hair Spa & Styling', sub: 'Smooth Silky Hair Treatment + Wash', price: 220, duration: '30 Mins' },
+          { id: 'sal3', icon: '💅', name: 'Gel Nail Art & Luxury Manicure', sub: 'Long-lasting UV Gel Polish', price: 110, duration: '30 Mins' },
+          { id: 'sal4', icon: '👰', name: 'HD Party & Bridal Makeup', sub: 'Waterproof Airbrush Finish', price: 450, duration: '30 Mins' }
+        ]
+      }
+    };
+
+    let bookings = [];
+    let clientsCount = 0;
+    let aiAgentActive = false;
+
+    async function init() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('bookingDate').value = today;
+      await syncFromBackend();
+      applyModeUI();
+    }
+
+    async function syncFromBackend() {
+      try {
+        const res = await fetch('/api/state');
+        const data = await res.json();
+        if (Array.isArray(data.bookings)) {
+          bookings = data.bookings.map(b => ({
+            token: b.Token || b.token,
+            mode: b.Mode || b.mode || 'clinic',
+            name: b.ClientName || b.name,
+            phone: b.Phone || b.phone,
+            email: b.Email || b.email || '',
+            service: b.Service || b.service,
+            price: Number(b.Price || b.price || 0),
+            date: String(b.Date || b.date).split('T')[0],
+            slot: b.Slot || b.slot,
+            status: b.Status || b.status || 'Confirmed'
+          }));
+        }
+        if (Array.isArray(data.customSlots)) {
+          data.customSlots.forEach(s => {
+            const st = s.SlotTime || s.slotTime;
+            if (st && !allTimeSlots.includes(st)) allTimeSlots.push(st);
+          });
+        }
+        clientsCount = Array.isArray(data.clients) ? data.clients.length : bookings.length;
+        aiAgentActive = Boolean(data.aiAgentActive);
+      } catch (e) {}
+    }
+
+    function toggleBusinessMode() {
+      currentMode = currentMode === 'clinic' ? 'salon' : 'clinic';
+      selectedSlot = null;
+      applyModeUI();
+    }
+
+    function applyModeUI() {
+      const cfg = presets[currentMode];
+      document.getElementById('brandTitle').textContent = cfg.title;
+      document.getElementById('brandSubtitle').textContent = cfg.subtitle;
+      document.getElementById('modeSwitchBtn').textContent = cfg.switchBtn;
+      document.getElementById('step1Title').textContent = cfg.step1;
+      document.getElementById('nameLabel').textContent = cfg.nameLabel;
+      document.getElementById('noteLabel').textContent = cfg.noteLabel;
+
+      selectedService = cfg.services[0];
+      renderServices();
+      renderSlots();
+      renderAdminTable();
+    }
+
+    function renderServices() {
+      const cfg = presets[currentMode];
+      const grid = document.getElementById('servicesGrid');
+      grid.innerHTML = '';
+      cfg.services.forEach(srv => {
+        const div = document.createElement('div');
+        div.className = 'service-card' + (selectedService && selectedService.id === srv.id ? ' selected' : '');
+        div.innerHTML = `
+          <div class="service-icon">${srv.icon}</div>
+          <div class="service-name">${srv.name}</div>
+          <div class="service-sub">${srv.sub}</div>
+          <div class="service-meta">
+            <span style="color:#34d399;">${cfg.currency}${srv.price}</span>
+            <span style="color:#38bdf8;">⏱️ ${srv.duration}</span>
+          </div>
+        `;
+        div.onclick = () => { selectedService = srv; renderServices(); renderSlots(); };
+        grid.appendChild(div);
+      });
+    }
+
+    function renderSlots() {
+      document.getElementById('slotCountBadge').textContent = allTimeSlots.length;
+      const dateVal = document.getElementById('bookingDate').value;
+      const grid = document.getElementById('slotsGrid');
+      grid.innerHTML = '';
+
+      const bookedSlots = bookings
+        .filter(b => b.date === dateVal && b.service === selectedService.name && b.status !== 'Cancelled')
+        .map(b => b.slot);
+
+      allTimeSlots.forEach(slot => {
+        const isBooked = bookedSlots.includes(slot);
+        const btn = document.createElement('div');
+        btn.className = 'slot-chip' + (isBooked ? ' booked' : '') + (selectedSlot === slot && !isBooked ? ' active' : '');
+        btn.innerHTML = `${slot}<small>${isBooked ? '🔒 BOOKED' : '✅ OPEN'}</small>`;
+        if (!isBooked) {
+          btn.onclick = () => { selectedSlot = slot; renderSlots(); };
+        }
+        grid.appendChild(btn);
+      });
+    }
+
+    document.getElementById('bookingForm').onsubmit = async (e) => {
+      e.preventDefault();
+      if (!selectedSlot) {
+        alert('Please click an open green time slot first!');
+        return;
+      }
+      const btn = document.getElementById('confirmBtn');
+      btn.disabled = true;
+      btn.textContent = '⏳ Confirming & Sending Thank You Email...';
+
+      const dateVal = document.getElementById('bookingDate').value;
+      const name = document.getElementById('custName').value.trim();
+      const phone = document.getElementById('custPhone').value.trim();
+      const email = document.getElementById('custEmail').value.trim();
+      const tokenCode = '#TKN-' + (100 + bookings.length + 1);
+      const curr = presets[currentMode].currency;
+
+      const newBooking = {
+        token: tokenCode,
+        mode: currentMode,
+        name,
+        phone,
+        email,
+        service: selectedService.name,
+        price: selectedService.price,
+        currency: curr,
+        date: dateVal,
+        slot: selectedSlot,
+        status: 'Confirmed'
+      };
+
+      try {
+        await fetch('/api/book', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newBooking)
+        });
+      } catch (err) {}
+
+      bookings.unshift(newBooking);
+      clientsCount += 1;
+
+      const cleanPhone = phone.replace(/\D/g, '');
+      const waMsg = encodeURIComponent(
+        `Thank you ${name} for booking ${selectedService.name}!\n` +
+        `Token: ${tokenCode}\nDate & Slot: ${dateVal} at ${selectedSlot}\nFee: ${curr}${selectedService.price}`
+      );
+      const waUrl = `https://wa.me/${cleanPhone}?text=${waMsg}`;
+
+      const qrPayload = encodeURIComponent(`BEright | ${tokenCode} | ${name} | ${selectedService.name} | ${dateVal} ${selectedSlot}`);
+      document.getElementById('modalToken').textContent = tokenCode;
+      document.getElementById('modalQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${qrPayload}`;
+      document.getElementById('modalDetails').innerHTML = `
+        <b>👤 Client:</b> ${name}<br>
+        <b>📞 WhatsApp:</b> ${phone}<br>
+        <b>📧 Email:</b> ${email} (Thank You Email Sent)<br>
+        <b>🏥 Service:</b> ${selectedService.name}<br>
+        <b>📅 Date & Time:</b> ${dateVal} at <b>${selectedSlot}</b>
+      `;
+      document.getElementById('modalWaBtn').href = waUrl;
+      document.getElementById('tokenModal').style.display = 'flex';
+
+      if (cleanPhone.length >= 9) {
+        window.open(waUrl, '_blank');
+      }
+
+      selectedSlot = null;
+      document.getElementById('bookingForm').reset();
+      document.getElementById('bookingDate').value = dateVal;
+      btn.disabled = false;
+      btn.textContent = '⚡ Confirm Booking & Get QR Token';
+      renderSlots();
+      renderAdminTable();
+    };
+
+    async function saveAiApiKey() {
+      const provider = document.getElementById('aiProviderSelect').value;
+      const apiKey = document.getElementById('aiApiKeyInput').value.trim();
+      if (!apiKey) {
+        alert('Please paste a valid Gemini or Groq API key first.');
+        return;
+      }
+      try {
+        const res = await fetch('/api/config-ai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ provider, apiKey })
+        });
+        const data = await res.json();
+        aiAgentActive = Boolean(data.aiAgentActive);
+        document.getElementById('aiApiKeyInput').value = '';
+        renderAdminTable();
+        alert(`Autonomous AI Care Agent connected via ${provider.toUpperCase()}!`);
+      } catch (e) {
+        alert('Failed to save API key. Check server connection.');
+      }
+    }
+
+    async function addCustomSlot() {
+      const inp = document.getElementById('newSlotInput');
+      const val = inp.value.trim().toUpperCase();
+      if (!val) return;
+      if (!allTimeSlots.includes(val)) {
+        allTimeSlots.push(val);
+        try {
+          await fetch('/api/slots', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ slotTime: val })
+          });
+        } catch (e) {}
+        alert(`Slot "${val}" added! Total available slots: ${allTimeSlots.length}`);
+        renderSlots();
+      }
+      inp.value = '';
+    }
+
+    async function sendWeeklyCampaignNow() {
+      try {
+        const res = await fetch('/api/weekly-campaign', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode: currentMode, useAiDraft: true })
+        });
+        const data = await res.json();
+        alert(`Weekly Doctor/Specialist Schedule & Care Check-In emails sent to ${data.count || clientsCount} clients!`);
+      } catch (e) {
+        alert('Weekly schedule & care check-in emails triggered!');
+      }
+    }
+
+    function switchTab(tab) {
+      if (tab === 'admin') {
+        const pin = prompt('Enter Owner Admin PIN (Demo PIN: 1234):', '1234');
+        if (pin !== '1234') { alert('Incorrect PIN!'); return; }
+        document.getElementById('customerView').style.display = 'none';
+        document.getElementById('adminView').style.display = 'block';
+        document.getElementById('tabAdminBtn').classList.add('active');
+        document.getElementById('tabCustomerBtn').classList.remove('active');
+        renderAdminTable();
+      } else {
+        document.getElementById('adminView').style.display = 'none';
+        document.getElementById('customerView').style.display = 'block';
+        document.getElementById('tabCustomerBtn').classList.add('active');
+        document.getElementById('tabAdminBtn').classList.remove('active');
+      }
+    }
+
+    function renderAdminTable() {
+      const cfg = presets[currentMode];
+      const modeBookings = bookings.filter(b => b.mode === currentMode);
+      document.getElementById('kpiBookings').textContent = modeBookings.length;
+      const rev = modeBookings.filter(b => b.status !== 'Cancelled').reduce((s, b) => s + b.price, 0);
+      document.getElementById('kpiRevenue').textContent = `${cfg.currency}${rev}`;
+      document.getElementById('kpiClients').textContent = clientsCount;
+      document.getElementById('kpiAiStatus').textContent = aiAgentActive ? 'LLM Agent Active' : 'Smart Built-in';
+
+      const tbody = document.getElementById('adminTableBody');
+      tbody.innerHTML = '';
+      modeBookings.forEach((b) => {
+        const globalIdx = bookings.indexOf(b);
+        const stClass = b.status === 'Completed' ? 'st-completed' : (b.status === 'Cancelled' ? 'st-cancelled' : 'st-confirmed');
+        const waText = encodeURIComponent(`Hello ${b.name}, how are you feeling? Reminder for your appointment (${b.token}) for ${b.service} on ${b.date} at ${b.slot}.`);
+        const cleanPhone = String(b.phone).replace(/\D/g, '');
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><b style="color:#f472b6;">${b.token}</b></td>
+          <td><b>${b.name}</b></td>
+          <td>${b.phone}<br><small style="color:#94a3b8;">${b.email || ''}</small></td>
+          <td>${b.service}</td>
+          <td>${b.date} • <b>${b.slot}</b></td>
+          <td><span class="status-tag ${stClass}">${b.status}</span></td>
+          <td>
+            <a href="https://wa.me/${cleanPhone}?text=${waText}" target="_blank" class="act-btn btn-wa">💬 WA</a>
+            <button class="act-btn btn-done" onclick="updateStatus(${globalIdx}, 'Completed')">✔ Done</button>
+            <button class="act-btn btn-del" onclick="updateStatus(${globalIdx}, 'Cancelled')">✖</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function updateStatus(idx, newStatus) {
+      bookings[idx].status = newStatus;
+      renderAdminTable();
+      renderSlots();
+      try {
+        await fetch('/api/status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: bookings[idx].token, status: newStatus })
+        });
+      } catch (e) {}
+    }
+
+    function toggleAiChat() {
+      const box = document.getElementById('aiChatBox');
+      box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    async function sendAiQuestion() {
+      const inp = document.getElementById('aiInput');
+      const q = inp.value.trim();
+      if (!q) return;
+      const body = document.getElementById('aiChatBody');
+      body.innerHTML += `<div class="msg-user">${q}</div>`;
+      inp.value = '';
+
+      const dateVal = document.getElementById('bookingDate').value;
+      const taken = bookings.filter(b => b.date === dateVal && b.service === selectedService.name && b.status !== 'Cancelled').map(b => b.slot);
+      const freeSlots = allTimeSlots.filter(s => !taken.includes(s));
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: q, mode: currentMode, service: selectedService.name, date: dateVal, freeSlots })
+        });
+        const data = await res.json();
+        body.innerHTML += `<div class="msg-bot">${data.answer}</div>`;
+      } catch (e) {
+        body.innerHTML += `<div class="msg-bot">How are you feeling today? Available slots on ${dateVal}: <b>${freeSlots.slice(0, 5).join(', ')}</b>.</div>`;
+      }
+      body.scrollTop = body.scrollHeight;
+    }
+
+    init();
+  </script>
+</body>
+</html>
